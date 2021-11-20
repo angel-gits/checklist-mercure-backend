@@ -1,0 +1,59 @@
+version:  '3.7'
+
+services:
+  php_checklist:
+    container_name: php_checklist
+    build: dockerfile/php
+    restart: on-failure
+    expose:
+      - "9000"
+    volumes:
+      - ../app:/var/www/html
+      - ../app/vendor:/var/www/html/vendor
+    links:
+      - mysql_checklist
+
+  nginx_checklist:
+    container_name: nginx_checklist
+    image: nginx:latest
+    restart: on-failure
+    ports:
+      - "8000:80"
+    volumes:
+      - ../app:/var/www/html
+      - ./logs/nginx:/var/log/nginx
+      - ./config/nginx:/etc/nginx/conf.d
+    links:
+      - php_checklist
+
+  mysql_checklist:
+    container_name: mysql_checklist
+    image: mysql:5.7
+    restart: on-failure
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - ./db/user:/var/lib/mysql
+
+  mercure_checklist-updates:
+    container_name: mercure_checklist-updates
+    image: dunglas/mercure:latest
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
+      ALLOW_ANONYMOUS: 1
+      CORS_ALLOWED_ORIGINS: "*"
+      PUBLISH_ALLOWED_ORIGINS: "*"
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins *
+        anonymous
+        subscriptions "/api/.well-known/mercure/"
+    ports:
+      - "9000:80"
+    expose:
+      - "80"
+

@@ -1,0 +1,49 @@
+version:  '3.7'
+
+services:
+  php_checklist:
+    container_name: php_checklist
+    build: dockerfile/php
+    restart: on-failure
+    networks:
+      - yourtar
+    expose:
+      - "9000"
+    volumes:
+      - ../app:/var/www/html
+      - ../app/vendor:/var/www/html/vendor
+    links:
+      - mysql_checklist
+
+  nginx_checklist:
+    container_name: nginx_checklist
+    image: nginx:latest
+    restart: on-failure
+    networks:
+      - yourtar
+    expose:
+      - "80"
+    volumes:
+      - ../app:/var/www/html
+      - ./logs/nginx:/var/log/nginx
+      - ./config/nginx:/etc/nginx/conf.d
+    links:
+      - php_checklist
+
+  mysql_checklist:
+    container_name: mysql_checklist
+    image: mysql:5.7
+    restart: on-failure
+    networks:
+      - yourtar
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - ./db/user:/var/lib/mysql
+
+networks:
+  yourtar:
+    external:
+      name: yourtar
