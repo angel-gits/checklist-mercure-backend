@@ -65,7 +65,7 @@ class TaskController extends AbstractController
         $this->em->flush();
 
         $update = new Update(
-            '/api/checklist',
+            '@checklist',
             json_encode(['message' => 'New task has been added']),
         );
         $this->hub->publish($update);
@@ -115,7 +115,7 @@ class TaskController extends AbstractController
         $this->em->flush();
 
         $update = new Update(
-            '/api/checklist',
+            '@checklist',
             json_encode(['message' => 'Task ' . $taskId . ' has been updated']),
         );
         $this->hub->publish($update);
@@ -136,7 +136,7 @@ class TaskController extends AbstractController
         }
 
         $update = new Update(
-            '/api/checklist',
+            '@checklist',
             json_encode(['message' => 'Task ' . $taskId . ' has been deleted']),
         );
         $this->hub->publish($update);
